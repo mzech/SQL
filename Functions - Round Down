@@ -1,0 +1,26 @@
+//This will return a rounded value that rounds down to the nearest increment inputed
+//example: Select dbo.RoundDownTo(money,2) from table
+//Example = original value money= 10077.60   - the return value is 10076
+
+USE [db_name]
+GO
+/****** Object:  UserDefinedFunction [dbo].[RoundDownTo]  ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+
+
+CREATE   
+FUNCTION [dbo].[RoundDownTo]
+	(@ToRound float, @Increment float)
+RETURNS float
+AS
+BEGIN
+
+RETURN FLOOR(@ToRound/@increment)*@Increment
+
+END
+
+
+
