@@ -1,0 +1,74 @@
+//Find out which tables are causing a storage issue.
+/*Accepts:Db name or Table name
+	description: returns rowcounts for all tables in the current database, 
+                or if @tablename is provided, for that table only.
+NOTE:      this procedure makes use of sysindexes, so make sure all indexes are up-to-date
+*/
+
+
+USE [db_name]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_getrowcount] ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+--exec dbo.sp_getrowcount 
+
+
+Create procedure [dbo].[sp_getrowcount]
+--	@dbname varchar(32) = null,
+	@tablename varchar(32) = null
+
+	as
+
+declare	@dbname	varchar(32)
+
+set nocount on 
+
+if @tablename is not null
+begin
+
+	if exists (select * from sysobjects where id = object_id(@tablename) and sysstat & 0xf = 3)
+	begin
+
+		select 	o.name, i.rows
+		from 	sysobjects o 
+		inner join sysindexes i 
+			on (o.id = i.id)
+		where 	o.id = object_id(@tablename)
+		and	i.indid < 2
+		order by o.name
+	end
+	
+	else
+	begin
+		select @dbname = db_name()
+		raiserror ('Object "%s" does not exist in database "%s" or is not a user table.', 
+			   16, 1, @tablename, @dbname)
+	end
+
+end
+
+else
+begin
+
+	select 	Cast(@@SERVERNAME as VarChar(25)) as ServerName, Cast(DB_Name()as VarChar(25)) as DBName,  
+	CAST(o.name As varchar(50)) as Name, i.rows as '# of Rows'
+	from 	sysobjects o 
+	inner join sysindexes i 
+		on (o.id = i.id)
+	where 	o.type = 'u'
+	and	i.indid < 2
+	order by o.name, i.rows
+
+--	sp_getrowcount
+
+end
+--
+
+
+
+
