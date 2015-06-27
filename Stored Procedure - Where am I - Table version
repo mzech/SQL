@@ -1,0 +1,54 @@
+/*--------------------------------------------------------------------------------------------------------
+	Purpose:-If you have written stored procedures in the past where you could remember some of the code 
+	they contained, but not the name of the stored procedure. 
+	This tool will help you find those elusive stored procedures based on the code in the stored procedure. 
+	It searches the sysobjects and syscomments tables to find any occurence of a text string. 
+	It sorts the return set by object name. (Supports SQL 2000 and greater) 
+--------------------------------------------------------------------------------------------------------------
+*/
+
+USE [db_name]
+GO
+/****** Object:  StoredProcedure [dbo].[spWhere_Am_I_Table]    Script Date: 06/26/2015 20:37:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+
+
+--EXEC spWhere_Am_I 'PendING%D'
+
+--ALTER   procedure spWhere_Am_I_Table
+Create  procedure [dbo].[spWhere_Am_I_Table]
+@cString varchar(1000)
+AS
+
+	set nocount on
+	Select @cString = 'select substring( o.name, 1, 50 ) as Object, count(*) as Occurences, ' +
+		'case ' +
+		' when o.xtype = ''D'' then ''Default'' ' +
+		' when o.xtype = ''F'' then ''Foreign Key'' ' +
+		' when o.xtype = ''P'' then ''Stored Procedure'' ' +
+		' when o.xtype = ''PK'' then ''Primary Key'' ' +
+		' when o.xtype = ''S'' then ''System Table'' ' +
+		' when o.xtype = ''TR'' then ''Trigger'' ' +
+		' when o.xtype = ''U'' then ''User Table'' ' +
+		' when o.xtype = ''V'' then ''View'' ' +
+		'end as Type ' +
+		'from syscolumns c join sysobjects o on c.id = o.id ' +
+		'where patindex( ''%'  + @cString + '%'', c.name ) > 0 ' +
+		'group by o.name, o.xtype ' +
+		'order by o.xtype, o.name'
+
+	Execute( @cString )
+Return
+
+
+
+
+
+
+
+
+
+
