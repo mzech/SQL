@@ -1,0 +1,29 @@
+-- This can be used to find files in a directory to make checks in sql 
+CREATE FUNCTION dbo.fn_FileExists(@path varchar(512))
+RETURNS BIT
+AS
+BEGIN
+     DECLARE @result INT
+     EXEC master.dbo.xp_fileexist @path, @result OUTPUT
+     RETURN cast(@result as bit)
+END;
+GO
+
+Edit your table and add a computed column (IsExists BIT). Set the expression to:
+dbo.fn_FileExists(filepath)
+
+Then just select:
+SELECT * FROM dbo.MyTable where IsExists = 1
+
+Update: 
+
+To use the function outside a computed column:
+select id, filename, dbo.fn_FileExists(filename) as IsExists
+from dbo.MyTable
+
+Update:
+
+If the function returns 0 for a known file, then there is likely a permissions issue. Make sure the SQL Server's account has sufficient permissions to access the folder and files. Read-only should be enough.
+
+And YES, by default, the 'NETWORK SERVICE' account will not have sufficient right into most folders. Right click on the folder in question and select 'Properties', then click on the 'Security' tab. Click 'Edit' and add 'Network Service'. Click 'Apply' and retest.
+
