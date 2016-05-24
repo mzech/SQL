@@ -1,0 +1,9 @@
+drop table #Counts
+Create Table #Counts
+( table_name varchar(255), row_count int ) 
+
+EXEC sp_MSforeachtable @command1='insert #counts
+(table_name, row_count) 
+Select "?", Count(*) from ?'
+Select table_name, row_count from #counts
+where row_count>10000 order by table_nam, row_count desc
