@@ -1,0 +1,68 @@
+﻿
+
+--EXEC spWhere_Am_I 'insert into tblproject'
+/*--------------------------------------------------------------------------------------------------------
+	Purpose:-
+	This tool will help you find those elusive stored procedures based on the code in the stored procedure. 
+	It searches the sysobjects and syscomments tables to find any occurence of a text string. 
+	It sorts the return set by object name. (Supports SQL 2000 and greater) 
+--------------------------------------------------------------------------------------------------------------
+*/
+
+
+create  procedure [dbo].[spWhere_Am_I]
+--alter procedure spWhere_Am_I
+@cString varchar(1000)
+AS
+
+Declare	@cString_sql varchar(1000)
+	set nocount on
+	Select @cString_sql = 'select substring( o.name, 1, 50 ) as Object, count(*) as Occurences, ' +
+		'case ' +
+		' when o.xtype = ''D'' then ''Default'' ' +
+		' when o.xtype = ''F'' then ''Foreign Key'' ' +
+		' when o.xtype = ''P'' then ''Stored Procedure'' ' +
+		' when o.xtype = ''PK'' then ''Primary Key'' ' +
+		' when o.xtype = ''S'' then ''System Table'' ' +
+		' when o.xtype = ''TR'' then ''Trigger'' ' +
+		' when o.xtype = ''U'' then ''User Table'' ' +
+		' when o.xtype = ''V'' then ''View'' ' +
+		'end as Type ' +
+		'from syscomments c join sysobjects o on c.id = o.id ' +
+		'where patindex( ''%'  + @cString + '%'', c.text ) > 0 ' +
+		'group by o.name, o.xtype ' +
+		'order by o.xtype, o.name'
+
+	Execute( @cString_sql )
+
+
+Select @cString_sql = 'select substring( o.name, 1, 50 ) as Object, count(*) as Occurences, ' +
+		'case ' +
+		' when o.xtype = ''D'' then ''Default'' ' +
+		' when o.xtype = ''F'' then ''Foreign Key'' ' +
+		' when o.xtype = ''P'' then ''Stored Procedure'' ' +
+		' when o.xtype = ''PK'' then ''Primary Key'' ' +
+		' when o.xtype = ''S'' then ''System Table'' ' +
+		' when o.xtype = ''TR'' then ''Trigger'' ' +
+		' when o.xtype = ''U'' then ''User Table'' ' +
+		' when o.xtype = ''V'' then ''View'' ' +
+		'end as Type ' +
+		'from syscolumns c join sysobjects o on c.id = o.id ' +
+		'where patindex( ''%'  + @cString + '%'', c.name ) > 0 ' +
+		'group by o.name, o.xtype ' +
+		'order by o.xtype, o.name'
+
+	Execute( @cString_sql )
+
+Return
+
+
+
+
+
+
+
+
+
+
+
